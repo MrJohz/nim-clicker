@@ -1,17 +1,45 @@
 import "lib/game"
+import "lib/clargs"
+import strtabs
 
-proc main(displayFull: bool): int =
+# proc main(printShop: bool): int =
   
-  var game = makeGame()
-  game.load()
+#   var game = makeGame()
+#   game.load()
 
-  game.clicks += 1
-  game.displayFull()
+#   game.clicks += 1
+#   game.displayFull()
 
-  game.save()
+#   if printShop:
+#     game.displayShop()
 
-  return 0
+#   game.save()
+
+#   return 0
+
+
 
 
 when isMainModule:
-  quit(main(displayFull=true))
+  
+  var parser = newParser()
+
+  var clickCommand = newCommand("click")
+
+  var shopCommand = newCommand("shop")
+  var shopBuyCommand = newCommand("buy")
+  shopBuyCommand.addArgument(newArgument("item", "The item to purchase"))
+  shopCommand.addCommand(shopBuyCommand)
+  var shopListCommand = newCommand("list")
+  shopCommand.addCommand(shopListCommand)
+
+  parser.addCommand(clickCommand)
+  parser.addCommand(shopCommand)
+  parser.addOption(newOption("hello", "An Argument", "hi", "hello", "h"))
+
+  var result = parser.parse()
+  echo("Args: " & $result.arguments)
+  echo("Opts: " & $result.options)
+  echo "Cmd:  " & result.command
+
+  #quit(main(printShop=true))
