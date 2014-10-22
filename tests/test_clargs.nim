@@ -78,3 +78,6 @@ suite "Test with single subcommand":
   writeStyled "Suite: Test with single subcommand\n"
   writeStyled "----------------------------------\n"
 
+  setup:
+    var parserWithSingleSubcommand = newParser()
+

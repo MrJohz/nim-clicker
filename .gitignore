@@ -3,3 +3,5 @@ bin
 nakefile
 nimcache
 clicks.txt
+tests/*
+!tests/test_*.nim
