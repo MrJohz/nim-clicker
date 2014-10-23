@@ -71,7 +71,14 @@ suite "Test clargs with no commands":
   test "Parser does not fail with no options":
     var res = parserWithOpts.parse(@[])
 
-suite "Test with single subcommand":
+  test "Options can be passed as array as well as varargs":
+    discard newOption("test-opt", "Test option", ["a", "opt"])
+
+  test "Base parser should return command == ''":
+    var res = parserWithArgs.parse(@["myarg1", "myarg2"])
+    assert res.command == ""
+
+suite "Test with single-level subcommand":
   
   setForegroundColor(fgMagenta)
   writeStyled "----------------------------------\n"
@@ -80,6 +87,50 @@ suite "Test with single subcommand":
 
   setup:
     var parserWithSingleSubcommand = newParser()
+
+    var subcommand = newCommand("command")
+    subcommand.addOption(newOption("opt1", "Option", "o", "option"))
+    parserWithSingleSubcommand.addCommand(subcommand)
+
+    var subcommand2 = newCommand("second-comm")
+    subcommand2.addArgument(newArgument("argr", "Argument"))
+    parserWithSingleSubcommand.addCommand(subcommand2)
+
+    parserWithSingleSubcommand.addArgument(newArgument("arg2", "Argument of main command"))
+
+  test "Subcommand exists":
+    var res = parserWithSingleSubcommand.parse(@["command"])
+    assert res.command == "command"
+
+  test "Subcommand does not overwrite other args to main command":
+    var res = parserWithSingleSubcommand.parse(@["argument"])
+    assert res.command == ""
+    assert res.arguments["arg2"] == "argument"
+
+  test "Subcommands can take opts":
+    var res = parserWithSingleSubcommand.parse(@["command", "--option:x"])
+    assert res.command == "command"
+    assert res.options["opt1"] == "x"
+
+    res = parserWithSingleSubcommand.parse(@["command", "-o"])
+    assert res.command == "command"
+    assert res.options.hasKey("opt1")
+
+  test "Subcommands can take args":
+    var res = parserWithSingleSubcommand.parse(@["second-comm", "argum"])
+    assert res.command == "second-comm"
+    assert res.arguments["argr"] == "argum"
+
+suite "Test multiple levels of sub-commands":
+  
+  setForegroundColor(fgMagenta)
+  writeStyled "-------------------------------------------\n"
+  writeStyled "Suite: Test multiple levels of sub-commands\n"
+  writeStyled "-------------------------------------------\n"
+
+  test "Multiple levels of subcommand are possible":
+    fail()  # Tests not yet written
+
 
 suite "Improvements (TODO)":
   

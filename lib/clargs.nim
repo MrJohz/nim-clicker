@@ -175,8 +175,12 @@ proc parseCmd(cmdName: string, command: var TCommand, parsedArgs: var TOptParser
 
 proc parse(parser: var TParser, parsedArgs: var TOptParser): PResult =
   parsedArgs.next # because broken, that's why.
-  if (parsedArgs.kind == cmdArgument) and parser.commands.contains(parsedArgs.key):
-    var command = parser.commands.mget(parsedArgs.key)
+  # if (parsedArgs.kind == cmdArgument) and parser.commands.contains(parsedArgs.key):
+  #   var command = parser.commands.mget(parsedArgs.key)
+  #   return parseCmd(command.key, command, parsedArgs)
+  if (parsedArgs.kind == cmdArgument) and parser.commands[DEFAULT_COMMAND].commands.contains(parsedArgs.key):
+    var command = parser.commands.mget(DEFAULT_COMMAND).commands.mget(parsedArgs.key)
+    parsedArgs.next # Used up first "argument" as command, switch to next one before passing upwards
     return parseCmd(command.key, command, parsedArgs)
   else:
     return parseCmd("", parser.commands.mget(DEFAULT_COMMAND), parsedArgs)
