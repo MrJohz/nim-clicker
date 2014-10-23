@@ -81,3 +81,28 @@ suite "Test with single subcommand":
   setup:
     var parserWithSingleSubcommand = newParser()
 
+suite "Improvements (TODO)":
+  
+  setForegroundColor(fgMagenta)
+  writeStyled "--------------------------\n"
+  writeStyled "Suite: Improvements (TODO)\n"
+  writeStyled "--------------------------\n"
+
+  test "Safe version of parse":
+
+    var parser = newParser()
+    parser.addArgument(newArgument("reqdarg", "Required Argument"))
+
+    #parser.parseSafe(@[])
+    fail()
+
+  test "Varargs for arguments":
+
+    var parser = newParser()
+    #parser.addArgument(newArgument("files", "Many arguments here", varargs=true))
+    fail()
+
+
+
+
+
