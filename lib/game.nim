@@ -1,13 +1,17 @@
 import "shop"
 import strutils
+import tables
 
 type
-  TClickerGame = object
+  TClickerGame* = object
     clicks*: int
     shop*: TClickerShop
 
 proc makeGame*(): TClickerGame =
   return TClickerGame(clicks: 0, shop: initShop())
+
+proc getCurrentCPC*(game: var TClickerGame): int =
+  return game.shop.getCPC()
 
 proc load*(game: var TClickerGame) =
   var f: string
@@ -24,10 +28,8 @@ proc save*(game: var TClickerGame) =
   var f = $(game.clicks)
   writeFile("clicks.txt", f)
 
-proc displayFull*(game: var TClickerGame) =
-  echo "clicks: " & $game.clicks
+proc click*(game: var TClickerGame) =
+  game.clicks += game.getCurrentCPC()
 
-proc displayShop*(game: var TClickerGame) =
-  echo "Shop:"
-  for id, item in game.shop.items.pairs:
-    echo item.name & " -- " & $item.price
+proc makeShopTemplate*(shop: var TClickerShop): string =
+  return shop.printAll()

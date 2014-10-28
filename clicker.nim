@@ -1,45 +1,80 @@
-import "lib/game"
-import "lib/clargs"
+import "./lib/game"
+import "./lib/clargs"
+from "./lib/printout" import nil
 import strtabs
+import tables
 
-# proc main(printShop: bool): int =
-  
-#   var game = makeGame()
-#   game.load()
+proc click(game: var TClickerGame, args: PResult): int =
+  if args.options.hasKey("showGame"):
+    echo game.clicks
 
-#   game.clicks += 1
-#   game.displayFull()
-
-#   if printShop:
-#     game.displayShop()
-
-#   game.save()
-
-#   return 0
+proc shop(game: var TClickerGame, args: PResult): int =
+  echo game.shop.makeShopTemplate()
 
 
+proc help(game: var TClickerGame, args:PResult): int {.discardable.} =
+  result = 0
 
+proc main(args: PResult): int =
+  result = 0 # default return code
+
+  var game = makeGame()
+  game.load()
+
+  game.click()
+
+  case args.command
+  of "":
+    result = click(game, args)
+  of "shop", "shop.buy":
+    result = shop(game, args)
+  of "help":
+    result = help(game, args)
+  else:
+    echo "Invalid command!"
+    help(game, args)
+    result = 1
+
+  game.save()
+
+proc isColorEnabled(inp: string) =
+  if inp == "off":
+    printout.setColorEnabled(printout.tceNever)
+  elif inp == "auto":
+    printout.setColorEnabled(printout.tceAuto)
+  elif inp == "always":
+    printout.setColorEnabled(printout.tceAlways)
+
+proc constructCLParser(): TParser =
+  var clParser = newParser()
+
+  # default command
+  clParser.addOption(newOption("help",
+        "Display help", ["h", "help"]))
+  clParser.addOption(newOption("showGame",
+        "Display", ["s", "show"]))
+
+  clParser.addGreedyOption(newOption("setColors",
+        "Set color usage", ["set-color"], isColorEnabled))
+
+  # shop command
+  var shopCommand = newCommand("shop")
+
+  # shop.buy command
+  var shopBuyCommand = newCommand("buy")
+  shopBuyCommand.addArgument(newArgument("items",
+        "Items to purchase", vargs=true))
+  shopCommand.addCommand(shopBuyCommand)
+
+  # help command
+  var helpCommand = newCommand("help")
+
+  # add all commands
+  clParser.addCommand(shopCommand)
+  clParser.addCommand(helpCommand)
+  return clParser
 
 when isMainModule:
-  
-  var parser = newParser()
-
-  var clickCommand = newCommand("click")
-
-  var shopCommand = newCommand("shop")
-  var shopBuyCommand = newCommand("buy")
-  shopBuyCommand.addArgument(newArgument("item", "The item to purchase"))
-  shopCommand.addCommand(shopBuyCommand)
-  var shopListCommand = newCommand("list")
-  shopCommand.addCommand(shopListCommand)
-
-  parser.addCommand(clickCommand)
-  parser.addCommand(shopCommand)
-  parser.addOption(newOption("hello", "An Argument", "hi", "hello", "h"))
-
-  var result = parser.parse()
-  echo("Args: " & $result.arguments)
-  echo("Opts: " & $result.options)
-  echo "Cmd:  " & result.command
-
-  #quit(main(printShop=true))
+  var parser = constructCLParser()
+  let parseResult = parser.parse()
+  quit(main(parseResult))

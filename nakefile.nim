@@ -12,7 +12,7 @@ task "clean", "Removes nimcache folders, compiled exes":
 
 task "build", "Builds clicker":
   createDir("bin")
-  direshell("nimrod c --out:bin/clicker clicker.nim")
+  direshell("nimrod c --out:bin/clicker  clicker.nim")
 
 task "test", "Runs tests":
   for ftype, testf in walkDir(ROOT_TEST_DIR):
