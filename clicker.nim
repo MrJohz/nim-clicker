@@ -9,7 +9,12 @@ proc click(game: var TClickerGame, args: PResult): int =
     echo game.clicks
 
 proc shop(game: var TClickerGame, args: PResult): int =
-  echo game.shop.makeShopTemplate()
+  case args.command
+  of "shop":
+    echo game.shop.makeShopTemplate()
+  of "shop.buy":
+    for arg in args.multargs["items"]:
+      game.shop.items.mget(arg).level += 1
 
 
 proc help(game: var TClickerGame, args:PResult): int {.discardable.} =

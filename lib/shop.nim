@@ -17,7 +17,7 @@ type
 proc initShop*(): TClickerShop =
   var shop = TClickerShop(items: initTable[string, ShopItem]())
   for item in items.ITEMSET:
-    shop.items[item.name] = item
+    shop.items[item.id] = item
   return shop
 
 proc getCPC*(shop: var TClickerShop): int =
