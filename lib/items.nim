@@ -27,7 +27,7 @@ proc price*(item: ShopItem): int {.inline.} =
   return item.price(item.level + 1)
 
 proc cpc*(item: ShopItem, level: int): int {.inline.} =
-  return item.baseCPC * level
+  return item.baseCPC * int(level / 4)
 
 proc cpc*(item: ShopItem): int {.inline.} =
   return item.cpc(item.level)

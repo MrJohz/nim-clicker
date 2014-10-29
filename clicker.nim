@@ -13,11 +13,18 @@ proc click(game: var ClickerGame, args: PResult): int =
 proc shop(game: var ClickerGame, args: PResult): int =
   case args.command
   of "shop":
+    echo "Clicks: ", game.clicks
     echo game.shop.makeShopTemplate()
   of "shop.buy":
     for arg in args.multargs["items"]:
-      game.shop.items.mget(arg).level += 1
-
+      let err = game.buy(arg)
+      case err
+      of peNotEnoughMoney:
+        echo "Error: Not enough money to purchase ", arg
+      of peInvalidKey:
+        echo "Error: Item ", arg, " does not exist"
+      else:
+        discard
 
 proc help(game: var ClickerGame, args:PResult): int {.discardable.} =
   result = 0
