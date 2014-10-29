@@ -6,6 +6,24 @@ type
     tceAuto
     tceNever
 
+  TColorFormat* = enum
+    tcfBold = (1, "\e[1m")
+    tcfDim = (2, "\e[2m")
+    tcfUnderline = (4, "\e[4m")
+
+    tcfClearBold = (21, "\e[21m")
+    tcfClearDim = (22, "\e[22m")
+    tcfClearUnderline = (24, "\e[24m")
+
+    tcfRed = (31, "\e[31m")
+    tcfGreen = (32, "\e[32m")
+    tcfYellow = (33, "\e[33m")
+    tcfBlue = (34, "\e[34m")
+    tcfMagenta = (35, "\e[35m")
+    tcfCyan = (36, "\e[36m")
+    tcfGray = (37, "\e[37m")
+    tcfClearColor = (39, "\e[39m")
+
 var colorEnabled = tceAuto
 
 proc setColorEnabled*(ce: TColorEnabled) =
@@ -14,37 +32,14 @@ proc setColorEnabled*(ce: TColorEnabled) =
 proc getColorEnabled*(): TColorEnabled =
   return colorEnabled
 
-template makeTerminalColors(color: expr, key: string) {.immediate.} =
-  const `color C` = key
+proc getColor*(color: TColorFormat): string {.inline.} =
   when hostOS != "windows":
-    proc color*(): string {.inline.} =
-      if colorEnabled == tceAlways:
-        return `color C`
-      elif colorEnabled == tceAuto and stdout.isatty:
-        return `color C`
-      else:
-        return ""
-  else:
-    proc color*(): string {.inline.} =
+    case colorEnabled
+    of tceAlways:
+      return $color
+    of tceAuto:
+      return (if stdout.isatty(): $color else: "")
+    of tceNever:
       return ""
-
-# font formatting
-makeTerminalColors(BOLD, "\e[1m")
-makeTerminalColors(DIM, "\e[2m")
-makeTerminalColors(UNDERLINE, "\e[4m")
-
-makeTerminalColors(CLEARBOLD, "\e[21m")
-makeTerminalColors(CLEARDIM, "\e[22m")
-makeTerminalColors(CLEARUNDERLINE, "\e[24m")
-
-# color formatting
-makeTerminalColors(RED, "\e[31m")
-makeTerminalColors(GREEN, "\e[32m")
-makeTerminalColors(YELLOW, "\e[33m")
-makeTerminalColors(BLUE, "\e[34m")
-makeTerminalColors(MAGENTA, "\e[35m")
-makeTerminalColors(CYAN, "\e[36m")
-makeTerminalColors(GRAY, "\e[37m")
-
-makeTerminalColors(CLEARCOLOR, "\e[39m")
-
+  else:
+    return ""

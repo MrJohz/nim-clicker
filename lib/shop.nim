@@ -8,7 +8,7 @@ export items.price
 export items.cpc
 export items.cps
 
-from "printout" import nil
+from "printout" import getColor
 
 type
   TClickerShop* = object
@@ -27,16 +27,18 @@ proc getCPC*(shop: var TClickerShop): int =
     result += item.cpc
 
 proc printAll*(shop: var TClickerShop): string =
-  var strs = @[printout.BOLD(), "Items:\n\n", printout.CLEARBOLD()]
+  var strs = @[getColor(printout.tcfBold), "Items:\n\n",
+              getColor(printout.tcfClearBold)]
   for item in shop.items.values():
-    strs.add("  " & printout.BOLD() & printout.BLUE())
+    strs.add("  " & getColor(printout.tcfBold) & getColor(printout.tcfBlue))
     strs.add(item.name)
-    strs.add(printout.CLEARBOLD() & printout.CLEARCOLOR() & " (" & printout.UNDERLINE())
+    strs.add(getColor(printout.tcfClearBold) & getColor(printout.tcfClearColor))
+    strs.add(" (" & getColor(printout.tcfUnderline))
     strs.add(item.id)
-    strs.add(printout.CLEARUNDERLINE() & ")\n")
-    strs.add("    " & printout.DIM())
+    strs.add(getColor(printout.tcfClearUnderline) & ")\n")
+    strs.add("    " & getColor(printout.tcfDim))
     strs.add(item.description)
-    strs.add(printout.CLEARDIM() & "\n")
+    strs.add(getColor(printout.tcfDim) & "\n")
     strs.add("    Price: ")
     strs.add($item.price)
     strs.add(" clicks\n")
