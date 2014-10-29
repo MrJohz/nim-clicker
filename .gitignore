@@ -2,6 +2,6 @@
 bin
 nakefile
 nimcache
-clicks.txt
+clicks.json
 tests/*
 !tests/test_*.nim

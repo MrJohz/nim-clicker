@@ -12,6 +12,11 @@ type
     baseCPS*: int
     baseCPC*: int
 
+  ShopItemSerial* = tuple[id: string, level: int]
+
+proc toSerial*(item: ShopItem): ShopItemSerial =
+  result = (id: item.id, level: item.level)
+
 
 # Getters and setters
 

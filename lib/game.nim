@@ -1,35 +1,47 @@
 import "shop"
 import strutils
 import tables
+from marshal import nil
+import streams
+import os
 
 type
-  TClickerGame* = object
+  ClickerGame* = object
     clicks*: int
-    shop*: TClickerShop
+    shop*: ClickerShop
 
-proc makeGame*(): TClickerGame =
-  return TClickerGame(clicks: 0, shop: initShop())
+  ClickerGameSerial* = tuple[clicks: int, shop: ClickerShopSerial]
 
-proc getCurrentCPC*(game: var TClickerGame): int =
+proc toSerial(game: var ClickerGame): ClickerGameSerial =
+  var tup = (clicks: game.clicks, shop: toSerial(game.shop))
+  return tup
+
+proc fromSerial(tup: ClickerGameSerial): ClickerGame =
+  return ClickerGame(clicks: tup.clicks, shop: fromSerial(tup.shop))
+
+proc makeGame*(): ClickerGame =
+  return ClickerGame(clicks: 0, shop: initShop())
+
+proc makeGame*(game: ClickerGameSerial): ClickerGame =
+  return fromSerial(game)
+
+proc getCurrentCPC*(game: var ClickerGame): int =
   return game.shop.getCPC()
 
-proc load*(game: var TClickerGame) =
-  var f: string
+proc load*(game: var ClickerGame, filename: string) =
+  var tup: ClickerGameSerial
+  if not existsFile(filename):
+    game = makeGame()
+  else:
+    marshal.load(newFileStream(filename, fmRead), tup)
+    game = makeGame(tup)
 
-  try:
-    f = readFile("clicks.txt")
-  except EIO:
-    game.clicks = 0
-    return
+proc save*(game: var ClickerGame, filename: string) =
+  var tup = toSerial(game)
+  marshal.store(newFileStream(filename, fmWrite), tup)
 
-  game.clicks = parseInt(f)
-
-proc save*(game: var TClickerGame) =
-  var f = $(game.clicks)
-  writeFile("clicks.txt", f)
-
-proc click*(game: var TClickerGame) =
+proc click*(game: var ClickerGame) =
   game.clicks += game.getCurrentCPC()
 
-proc makeShopTemplate*(shop: var TClickerShop): string =
+proc makeShopTemplate*(shop: var ClickerShop): string =
   return shop.printAll()

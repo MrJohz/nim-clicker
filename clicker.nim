@@ -4,11 +4,13 @@ from "./lib/printout" import nil
 import strtabs
 import tables
 
-proc click(game: var TClickerGame, args: PResult): int =
+const FILENAME = "clicks.json"
+
+proc click(game: var ClickerGame, args: PResult): int =
   if args.options.hasKey("showGame"):
     echo game.clicks
 
-proc shop(game: var TClickerGame, args: PResult): int =
+proc shop(game: var ClickerGame, args: PResult): int =
   case args.command
   of "shop":
     echo game.shop.makeShopTemplate()
@@ -17,14 +19,14 @@ proc shop(game: var TClickerGame, args: PResult): int =
       game.shop.items.mget(arg).level += 1
 
 
-proc help(game: var TClickerGame, args:PResult): int {.discardable.} =
+proc help(game: var ClickerGame, args:PResult): int {.discardable.} =
   result = 0
 
 proc main(args: PResult): int =
   result = 0 # default return code
 
   var game = makeGame()
-  game.load()
+  game.load(FILENAME)
 
   game.click()
 
@@ -40,7 +42,7 @@ proc main(args: PResult): int =
     help(game, args)
     result = 1
 
-  game.save()
+  game.save(FILENAME)
 
 proc isColorEnabled(inp: string) =
   if inp == "off":
