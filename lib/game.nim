@@ -20,6 +20,8 @@ type
     peInvalidKey
     peNotEnoughMoney
 
+const ONE_SECOND = fromSeconds(1)
+
 proc toSerial(game: var ClickerGame): ClickerGameSerial =
   var tup = (clicks: game.clicks, time: getTime(), shop: toSerial(game.shop))
   return tup
@@ -28,13 +30,16 @@ proc fromSerial(tup: ClickerGameSerial): ClickerGame =
   return ClickerGame(clicks: tup.clicks, time: tup.time, shop: fromSerial(tup.shop))
 
 proc makeGame*(): ClickerGame =
-  return ClickerGame(clicks: 0, shop: initShop())
+  return ClickerGame(clicks: 0, time: getTime(), shop: initShop())
 
 proc makeGame*(game: ClickerGameSerial): ClickerGame =
   return fromSerial(game)
 
 proc getCurrentCPC*(game: var ClickerGame): int =
   return game.shop.getCPC()
+
+proc getCurrentCPS*(game: var ClickerGame): int =
+  return game.shop.getCPS()
 
 proc load*(game: var ClickerGame, filename: string) =
   var tup: ClickerGameSerial
@@ -48,8 +53,18 @@ proc save*(game: var ClickerGame, filename: string) =
   var tup = toSerial(game)
   marshal.store(newFileStream(filename, fmWrite), tup)
 
+proc tickClick(game: var ClickerGame) =
+  game.clicks += game.getCurrentCPS()
+
 proc click*(game: var ClickerGame) =
   game.clicks += game.getCurrentCPC()
+  let
+    currentTime = getTime()
+    timeDif = if currentTime > game.time: currentTime - game.time else: 0
+
+  for tick in 0..timeDif:
+    game.tickClick()
+  game.time = currentTime
 
 proc makeShopTemplate*(shop: var ClickerShop): string =
   return shop.printAll()

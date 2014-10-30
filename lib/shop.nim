@@ -42,6 +42,12 @@ proc getCPC*(shop: var ClickerShop): int =
   for item in shop.items.values():
     result += item.cpc
 
+proc getCPS*(shop: var ClickerShop): int =
+  result = 0
+
+  for item in shop.items.values():
+    result += item.cps
+
 proc printAll*(shop: var ClickerShop): string =
   var strs = @[getColor(printout.tcfBold), "Items:\n\n",
               getColor(printout.tcfClearBold)]
