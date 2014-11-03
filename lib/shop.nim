@@ -36,14 +36,14 @@ proc fromSerial*(tup: ClickerShopSerial): ClickerShop =
 
   return shop
 
-proc getCPC*(shop: var ClickerShop): int =
-  result = 1 # base clicks
+proc getCPC*(shop: var ClickerShop): float =
+  result = 1.0 # base clicks
 
   for item in shop.items.values():
     result += item.cpc
 
-proc getCPS*(shop: var ClickerShop): int =
-  result = 0
+proc getCPS*(shop: var ClickerShop): float =
+  result = 0.0
 
   for item in shop.items.values():
     result += item.cps

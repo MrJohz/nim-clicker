@@ -9,8 +9,8 @@ type
     description*: string
     basePrice: int
     level*: int
-    baseCPS*: int
-    baseCPC*: int
+    baseCPS*: float
+    baseCPC*: float
 
   ShopItemSerial* = tuple[id: string, level: int]
 
@@ -26,16 +26,16 @@ proc price*(item: ShopItem, level: int): int {.inline.} =
 proc price*(item: ShopItem): int {.inline.} =
   return item.price(item.level + 1)
 
-proc cpc*(item: ShopItem, level: int): int {.inline.} =
-  return item.baseCPC * int(level / 4)
+proc cpc*(item: ShopItem, level: int): float {.inline.} =
+  return item.baseCPC * (level / 2)
 
-proc cpc*(item: ShopItem): int {.inline.} =
+proc cpc*(item: ShopItem): float {.inline.} =
   return item.cpc(item.level)
 
-proc cps*(item: ShopItem, level: int): int {.inline.} =
-  return item.baseCPS * level
+proc cps*(item: ShopItem, level: int): float {.inline.} =
+  return item.baseCPS * (level / 4)
 
-proc cps*(item: ShopItem): int {.inline.} =
+proc cps*(item: ShopItem): float {.inline.} =
   return item.cps(item.level)
 
 
@@ -72,9 +72,9 @@ proc makeShopItems(filename: string): seq[ShopItem] {.compileTime.} =
       of "price":
         result[len(result)-1].basePrice = parseInt(value)
       of "cps":
-        result[len(result)-1].baseCPS = parseInt(value)
+        result[len(result)-1].baseCPS = parseFloat(value)
       of "cpc":
-        result[len(result)-1].baseCPC = parseInt(value)
+        result[len(result)-1].baseCPC = parseFloat(value)
     else:
       discard
 

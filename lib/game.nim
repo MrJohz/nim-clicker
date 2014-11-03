@@ -9,11 +9,11 @@ import times
 
 type
   ClickerGame* = object
-    clicks*: int
+    clicks*: float
     time*: TTime
     shop*: ClickerShop
 
-  ClickerGameSerial* = tuple[clicks: int, time: TTime, shop: ClickerShopSerial]
+  ClickerGameSerial* = tuple[clicks: float, time: TTime, shop: ClickerShopSerial]
 
   PurchaseError* = enum
     peSuccess
@@ -35,10 +35,10 @@ proc makeGame*(): ClickerGame =
 proc makeGame*(game: ClickerGameSerial): ClickerGame =
   return fromSerial(game)
 
-proc getCurrentCPC*(game: var ClickerGame): int =
+proc getCurrentCPC*(game: var ClickerGame): float =
   return game.shop.getCPC()
 
-proc getCurrentCPS*(game: var ClickerGame): int =
+proc getCurrentCPS*(game: var ClickerGame): float =
   return game.shop.getCPS()
 
 proc load*(game: var ClickerGame, filename: string) =
@@ -74,10 +74,10 @@ proc buy*(game: var ClickerGame, arg: string): PurchaseError =
     return peInvalidKey
 
   var item = game.shop.items.mget(arg)
-  if item.price > game.clicks:
+  if item.price > int(game.clicks):
     return peNotEnoughMoney
 
-  game.clicks -= item.price
+  game.clicks -= float(item.price)
   item.level += 1
 
   game.shop.items[arg] = item
