@@ -8,10 +8,14 @@ import os
 import times
 
 type
+  bonusCallback = proc (currentTick: int, game: var ClickerGame)
+
   ClickerGame* = object
     clicks*: float
     time*: TTime
     shop*: ClickerShop
+    activeBonus*: seq[tuple[id, ticksLeft: int]]
+    registeredBonuses*: [0..20, bonusCallback]
 
   ClickerGameSerial* = tuple[clicks: float, time: TTime, shop: ClickerShopSerial]
 
@@ -44,8 +48,12 @@ proc getCurrentCPS*(game: var ClickerGame): float =
 proc load*(game: var ClickerGame, filename: string) =
   var tup: ClickerGameSerial
   try:
-    marshal.load(newFileStream(filename, fmRead), tup)
-    game = makeGame(tup)
+    var stream = newFileStream(filename, fmRead)
+    if stream == nil:
+      game = makeGame()
+    else:
+      marshal.load(stream, tup)
+      game = makeGame(tup)
   except EIO, EJsonParsingError:
     game = makeGame()
 
@@ -53,8 +61,10 @@ proc save*(game: var ClickerGame, filename: string) =
   var tup = toSerial(game)
   marshal.store(newFileStream(filename, fmWrite), tup)
 
-proc tickClick(game: var ClickerGame) =
-  game.clicks += game.getCurrentCPS()
+proc tickClick(game: var ClickerGame, tick: int) =
+  var clkpersec = game.getCurrentCPS()
+
+
 
 proc click*(game: var ClickerGame) =
   game.clicks += game.getCurrentCPC()
@@ -63,7 +73,7 @@ proc click*(game: var ClickerGame) =
     timeDif = if currentTime > game.time: currentTime - game.time else: 0
 
   for tick in 0..timeDif:
-    game.tickClick()
+    game.tickClick(tick.int)
   game.time = currentTime
 
 proc makeShopTemplate*(shop: var ClickerShop): string =
