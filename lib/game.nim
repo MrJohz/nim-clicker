@@ -15,7 +15,7 @@ type
     time*: TTime
     shop*: ClickerShop
     activeBonus*: seq[tuple[id, ticksLeft: int]]
-    registeredBonuses*: [0..20, bonusCallback]
+    registeredBonuses*: array[0..20, bonusCallback]
 
   ClickerGameSerial* = tuple[clicks: float, time: TTime, shop: ClickerShopSerial]
 
