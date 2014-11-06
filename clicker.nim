@@ -29,6 +29,16 @@ proc shop(game: var ClickerGame, args: PResult): int =
 proc help(game: var ClickerGame, args:PResult): int {.discardable.} =
   result = 0
 
+  echo "The Clicker Game"
+  echo ""
+  echo "Every time you run this program, you get clicks."
+  echo "Run `clicker shop` to find out what you can buy,"
+  echo "and `clicker shop buy <id-name>` to buy the item"
+  echo "with  your clicks."
+  echo "Run `clicker -s` to see how many clicks you have."
+  echo ""
+  echo "Built (badly) with Nim by Johz"
+
 proc main(args: PResult): int =
   result = 0 # default return code
 
