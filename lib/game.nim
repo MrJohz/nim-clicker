@@ -7,19 +7,12 @@ from json import EJsonParsingError
 import streams
 import os
 import times
-import sets
-import hashes
 
-# Deal with bonus tuples
+
 type
   BonusTuple = tuple[id:string, ticksLeft:int]
 
-proc hash(bonus: BonusTuple): THash =
-  return hash(bonus.id)
-
-type
-
-  ActiveBonuses = TSet[tuple[id: string, ticksLeft: int]]
+  ActiveBonuses = TTable[string, int]
 
   ClickerGame* = object
     clicks*: float
@@ -39,21 +32,27 @@ type
     peNotEnoughMoney
     peMaxLevel
 
+  UseError* = enum
+    ueSuccess
+    ueTooFast
+    ueNotBought
+    ueUnknownItem
+
 const ONE_SECOND = fromSeconds(1)
 
 proc toSerial(game: var ClickerGame): ClickerGameSerial =
   var bonuses: seq[BonusTuple] = @[]
-  for bonus in game.activeBonus:
-    bonuses.add(game.activeBonus.mget(bonus))
+  for key, ticks in game.activeBonus.pairs:
+    bonuses.add((id: key, ticksleft: ticks))
 
   var tup = (clicks: game.clicks, time: getTime(),
              shop: toSerial(game.shop), activeBonus: bonuses)
   return tup
 
 proc fromSerial(tup: ClickerGameSerial): ClickerGame =
-  var bonuses = initSet[BonusTuple](16)
+  var bonuses = initTable[string, int](16)
   for bonus in tup.activeBonus:
-    bonuses.incl(bonus)
+    bonuses[bonus.id] = bonus.ticksleft
 
   var game = ClickerGame(clicks: tup.clicks,
                          time: tup.time,
@@ -62,7 +61,7 @@ proc fromSerial(tup: ClickerGameSerial): ClickerGame =
   return game
 
 proc makeGame*(): ClickerGame =
-  return ClickerGame(clicks: 0, time: getTime(), shop: initShop(), activeBonus: initSet[BonusTuple]())
+  return ClickerGame(clicks: 0, time: getTime(), shop: initShop(), activeBonus: initTable[string, int](16))
 
 proc makeGame*(game: ClickerGameSerial): ClickerGame =
   return fromSerial(game)
@@ -95,18 +94,20 @@ proc tickClick(game: var ClickerGame, tick: int) =
 
   var addition = 0.float
 
-  for bonus in game.activeBonus:
-    if bonus.ticksLeft == 0:  # if ticksLeft < 0, ignore it
-      game.activeBonus.excl(bonus)
+  for key, ticksleft in game.activeBonus.pairs:
+
+    if ticksLeft == 0:  # if ticksLeft < 0, ignore it
+      game.activeBonus.del(key)
       continue
 
-    var powerup = game.shop.powerups.mget(bonus.id)
+    var powerup = game.shop.powerups.mget(key)
     var bonusProc = powerup.callback
-    let bonusAddition = bonusProc(tick, bonus.ticksLeft, powerup.level, cpc, cps)
+    let bonusAddition = bonusProc(tick, ticksLeft, powerup.level, cpc, cps)
     addition += bonusAddition
 
-    var mBonus = game.activeBonus.mget(bonus)
-    mBonus.ticksLeft -= 1
+    if ticksLeft > 0:
+      let setTicks = ticksleft - 1
+      game.activeBonus[key] = setTicks
 
   game.clicks += cps
   game.clicks += addition
@@ -146,6 +147,19 @@ proc buy*(game: var ClickerGame, arg: string): PurchaseError =
     pwrup.level += 1
 
     if pwrup.autocall:
-      game.activeBonus.incl((id: pwrup.id, ticksLeft: pwrup.tickLength))
+      game.activeBonus[pwrup.id] = pwrup.tickLength
 
     game.shop.powerups[arg] = pwrup
+  else:
+    return peInvalidKey
+
+proc use*(game: var ClickerGame, arg: string): UseError =
+  if not game.shop.powerups.hasKey(arg):
+    return ueUnknownItem
+  elif not game.shop.powerups[arg].level > 0:
+    return ueNotBought
+
+  if game.activeBonus.hasKey(arg):
+    return ueTooFast
+
+  game.activeBonus[arg] = game.shop.powerups[arg].ticklength

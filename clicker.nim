@@ -23,8 +23,22 @@ proc shop(game: var ClickerGame, args: PResult): int =
         echo "Error: Not enough money to purchase ", arg
       of peInvalidKey:
         echo "Error: Item ", arg, " does not exist"
-      else:
+      of peMaxLevel:
+        echo "Error: Item ", arg, " is at the max level"
+      of peSuccess:
         discard
+
+proc use(game: var ClickerGame, args: PResult): int =
+  let err = game.use(args.arguments["powerup"])
+  case err
+  of ueTooFast:
+    echo "Error: Wait for the cooldown!"
+  of ueNotBought:
+    echo "You haven't bought that powerup"
+  of ueUnknownItem:
+    echo "That powerup doesn't exist"
+  of ueSuccess:
+    discard
 
 proc help(game: var ClickerGame, args:PResult): int {.discardable.} =
   result = 0
@@ -54,6 +68,8 @@ proc main(args: PResult): int =
     result = shop(game, args)
   of "help":
     result = help(game, args)
+  of "use":
+    result = use(game, args)
   else:
     echo "Invalid command!"
     help(game, args)
@@ -90,12 +106,17 @@ proc constructCLParser(): TParser =
         "Items to purchase", vargs=true))
   shopCommand.addCommand(shopBuyCommand)
 
+  # use command
+  var useCommand = newCommand("use")
+  useCommand.addArgument(newArgument("powerup", "Powerup to use"))
+
   # help command
   var helpCommand = newCommand("help")
 
   # add all commands
   clParser.addCommand(shopCommand)
   clParser.addCommand(helpCommand)
+  clParser.addCommand(useCommand)
   return clParser
 
 when isMainModule:
